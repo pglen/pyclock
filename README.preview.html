@@ -1,8 +1,58 @@
-<h1>pyclock large LCD alarm clock</h1>
-<p>This is an alarm clock that is capable of waking the system<br />
-  from sleep before the alarm occurs.</p>
-<p>The control of the RTC needs root, so start this as a suid program.</p>
-<pre><code>chmod u+s pyclock.py
+<h1>pyclock.py</h1>
+<h2>is a large LCD alarm clock</h2>
+<p>This is an alarm clock that is capable of waking the system from sleep before<br />
+the alarm occurs.</p>
+<p>The control of the RTC needs suid root, so start this as a suid program.</p>
+<pre><code>    chmod u+s pyclock.py
 </code></pre>
-<p>The LCD is a crude version of the one I created a decade ago.</p>
+<p>The other possible arrangement is giving your user access to the RTC by<br />
+allowing your user to control /dev/rtc0 (or whatever your system is configured as)<br />
+(note: udevd makes it harder to accomplish this)</p>
+<h2>Setting alarm:</h2>
+<p>Click on the mini button at the lower right corner region titled<br />
+  "Set Alarm".</p>
+<p>The LCD changes color, and one can drag up or down on the digits to change time.<br />
+ When done, click on the 'Set Alarm' button again.</p>
+<h2>Screen shot:</h2>
 <p><img alt="Screen Shot of DIFF" src="screen.png" /></p>
+<h2>Notes:</h2>
+<p>We recommend suid, because trying to start a GUI program as root may be challenging.<br />
+  Most subsystems resist running as root. For instance, sound may not play,<br />
+  or the graphical system may not work as intended. This is actually a good thing,<br />
+  protecting system integrity.</p>
+<h2>Testing:</h2>
+<p>Set alarm 3 minutes rom now. Put the system to sleep with the 'Sleep' or 'Suspend' or<br />
+  'Hibernate' button.  The system wakes 30 seconds before the alarm time is due.<br />
+  Alarm should sound for 5 separate repeats. Click on the "Close Alarm" button to<br />
+  stop alarm sound.</p>
+<h2>Tech</h2>
+<p>On linux, the RTC operates on UTC standard time. The values are translated<br />
+back and forth between RTC and LOCAL time transparently. However, this<br />
+might cause complication at dual boot with windows etc ... This is not a<br />
+limitation of pyclock, rather the underlying systems.</p>
+<p>The program has no move / minimize arrangements, use the window manager's<br />
+facilities to control that. (toolbar -&gt; right click -&gt; move.. etc)</p>
+<h2>Use the source:</h2>
+<p>The LCD is a (crude) version of the one I created a decade ago. Most useful as it<br />
+scales nicely and can display hexadecimal digits as well. Note the rollover features<br />
+are implemented as callbacks.</p>
+<h2>Command line parameters:</h2>
+<pre><code>Alarm Clock with big LCD
+Usage: pyclock.py [options]
+  options:
+    -d   --debug     pgdebug   -  Debug level. 0=none 10=noisy. Default: 0
+    -a   --alarm     alarm     -  Set alarm time. Format: HH:MM Autowrap OK.
+    -q   --quiet               -  Quiet. Show less info.
+    -v   --verbose             -  Increase verbosity.
+    -V   --version             -  Print Version string.
+    -h   --help                -  Show Help. (this screen)
+This program will set the RTC wake time as well.
+</code></pre>
+<p>The alarm is set with the option -a  HH:MM in 24 hour notation. If alarm is<br />
+ set to time before the current time, it auto wraps to the next day.<br />
+    (Dialog displayed if autowrap was needed)</p>
+<h2>Dependencies:</h2>
+<pre><code>playsound3, pyvguicom, pygobject, cairo
+use: pip install playsound3 ...
+</code></pre>
+<p>// EOF</p>

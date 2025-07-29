@@ -49,8 +49,9 @@ class smallLab(Gtk.Label):
 
 class MainWin(Gtk.Window):
 
-    def __init__(self, conf = None):
+    def __init__(self, adt, conf = None):
 
+        self.adt = adt
         self.alcnt = 0
         self.aloff = False
         self.cnt = 0
@@ -264,36 +265,31 @@ class MainWin(Gtk.Window):
 
     def set_ala(self, butt):
         #print("set_ala", butt)
+        self._set_ala()
+
+    def _set_ala(self, fromcom = False):
         if self.setala:
-            dt = datetime.datetime.now()
-            #self.aloff = False
             dt2 = None
+            dt = datetime.datetime.now()
             try:
-                hhh = self.lcdh0._num * 10 + self.lcdh1._num
-                mmm = self.lcdm0._num * 10 + self.lcdm1._num
-                sss =  self.lcds0._num * 10 + self.lcds1._num
-                ddd = datetime.date(dt.year, dt.month, dt.day)
-                ttt = datetime.time(hhh, mmm, sss)
-                dt2 = datetime.datetime.combine(ddd, ttt)
-                #print("dt2", dt2)
+                if fromcom:
+                    dt2 = fromcom
+                else:
+                    hhh = self.lcdh0._num * 10 + self.lcdh1._num
+                    mmm = self.lcdm0._num * 10 + self.lcdm1._num
+                    sss =  self.lcds0._num * 10 + self.lcds1._num
+                    ddd = datetime.date(dt.year, dt.month, dt.day)
+                    ttt = datetime.time(hhh, mmm, sss)
+                    dt2 = datetime.datetime.combine(ddd, ttt)
                 if dt2 < dt:
-                    dialog = Gtk.MessageDialog(text="Time extended to tomarrow.",
-                        secondary_text = sys.exc_info()[1], # + "Pleas readjust",
-                        buttons = Gtk.ButtonsType.OK)
-                    dialog.run(); dialog.destroy()
-                    #return
+                    pgutil.xmessage("Alarm time extended to tomarrow.")
                     dt2 += datetime.timedelta(hours=24)
             except:
                 print(sys.exc_info())
-                dialog = Gtk.MessageDialog(text="Invalid Date / Time",
-                        secondary_text = sys.exc_info()[1], # + "Pleas readjust",
-                        buttons = Gtk.ButtonsType.OK)
-                dialog.run(); dialog.destroy()
+                utils.xmessage("Invalid Date / Time", sys.exc_info()[1])
                 return
-
             self.setala = False
             fg = 0, 0, 0
-
             ddd = (dt2-dt)
             self.set_status( \
                 "Alarm Set to: %d:%d:%d (h:m:s) from now." % \
@@ -321,8 +317,7 @@ class MainWin(Gtk.Window):
                 self.lcds0.set_num(0)
                 self.lcds1.set_num(0)
             fg = 0, 0, 5
-            #self.set_status("Setting alarm")
-            # time by dragging mouse on digit")
+            self.set_status("Set alarm dragging mouse on digits")
 
         for aa in self.ctrarr:
             aa.fg = fg
@@ -376,18 +371,24 @@ class MainWin(Gtk.Window):
         pass
 
     def load(self):
+
         #print("Called load")
+
         #self.set_status("Status text for load")
         soundx.play_sound(gongs)
+
+        if self.adt:
+            #print("adt:", self.adt)
+            self.setala = True
+            self._set_ala(self.adt)
+
+        # Test items
         #self.set_rtc(datetime.datetime.now())
         #dt = datetime.datetime.now()
         #alwin.AlWin(dt)
 
-        #pgutil.usleep(200)
-        #time.sleep(10);
-
     def callb(self):
-        #print("Close callback")
+        print("Close callback")
         soundx.stop_sound()
         self.aloff = True
 

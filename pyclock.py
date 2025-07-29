@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import os, sys, getopt, signal, select, socket, time, struct
-import random, stat
+import random, stat, datetime
 
 sys.path.append('pyclocklib')
 from pyclocklib.mainwin import  *
@@ -41,7 +41,7 @@ def pversion():
     # option, var_name, initial_val, function, help
 optarr = [\
     ["d:",  "debug=",   "pgdebug",  0,      None,     "Debug level. 0=none 10=noisy. Default: 0" ],
-    ["p:",  "port=",    "port",     9999,   None,     "Listen on port. Default: 9999"],
+    ["a:",  "alarm=",   "alarm",    "",     None,     "Set alarm time. Format: HH:MM Autowrap OK."],
     ["q",   "quiet",    "quiet",    0,      None,     "Quiet. Show less info."],
     ["v",   "verbose",  "verbose",  0,      None,     "Increase verbosity."],
     ["V",   "version",  None,       None,   pversion, "Print Version string."],
@@ -51,14 +51,27 @@ optarr = [\
 #comline.setprog("Usage: template.py [options]")
 comline.sethead("Alarm Clock with big LCD")
 comline.setargs("[options]")
-comline.setfoot("This program with set the RTC wake time as well.")
+comline.setfoot("This program will set the RTC wake time as well.")
 conf = comline.ConfigLong(optarr)
 
 if __name__ == '__main__':
 
     global mw
     args = conf.comline(sys.argv[1:])
-    mw = MainWin(conf)
+    adt = None
+    if conf.alarm:
+        #print(conf.alarm)
+        dt = datetime.datetime.now()
+        try:
+            ttt =  dt.strptime(conf.alarm, "%H:%M")
+            adt =  dt.replace(hour=ttt.hour, minute=ttt.minute,
+                                second=0, microsecond=0)
+            #print(adt)
+        except:
+            print("Invalid time, use HH:MM format")
+            sys.exit(1)
+
+    mw = MainWin(adt, conf)
     mw.run()
     sys.exit(0)
 

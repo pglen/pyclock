@@ -177,45 +177,25 @@ def cmp(aa, bb):
 
 # ------------------------------------------------------------------------
 # Show a regular message:
-'''
-def xmessage(strx, title = None, icon = Gtk.MESSAGE_INFO):
 
-    dialog = Gtk.MessageDialog(None, Gtk.DIALOG_DESTROY_WITH_PARENT,
-        icon, Gtk.BUTTONS_CLOSE, strx)
+def xmessage(textx, sectext = ""):
 
-    if title:
-        dialog.set_title(title)
-    else:
-        dialog.set_title("ePub Reader")
-
-    # Close dialog on user response
-    dialog.connect("response", lambda d, r: d.destroy())
-    dialog.show()
-'''
+    dialog = Gtk.MessageDialog(text=textx,
+                    secondary_text =  sectext,
+                        buttons = Gtk.ButtonsType.OK)
+    dialog.run()
+    dialog.destroy()
 
 # -----------------------------------------------------------------------
 # Sleep just a little, but allow the system to breed
 
-'''def  usleep(msec):
-
-    got_clock = time.clock() + float(msec) / 1000
-    #print (got_clock)
-    while True:
-        if time.clock() > got_clock:
-            break
-        Gtk.main_iteration_do(False)
-'''
-
-# -----------------------------------------------------------------------
-# Sleep just a little, but allow the system to breed
+if sys.version_info[0] < 3 or \
+    (sys.version_info[0] == 3 and sys.version_info[1] < 3):
+    timefunc = time.clock
+else:
+    timefunc = time.process_time
 
 def  usleep(msec):
-
-    if sys.version_info[0] < 3 or \
-        (sys.version_info[0] == 3 and sys.version_info[1] < 3):
-        timefunc = time.clock
-    else:
-        timefunc = time.process_time
 
     got_clock = timefunc() + float(msec) / 1000
     #print( got_clock)
