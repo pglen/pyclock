@@ -3,15 +3,19 @@
 import os, sys, getopt, signal, random, time, warnings
 import datetime, subprocess
 
+mydir = os.path.dirname(__file__)
+#print("adding:", mydir)
+sys.path.append(os.path.dirname(__file__))
+
+gongs   = os.path.join(mydir, "gong.ogg")
+alarms  = os.path.join(mydir, "alarm.oga")
+askrtc  =  os.path.join(mydir, "askrtc.sh")
+iconf   =  os.path.join(mydir, "pyclock.png")
+
 from pymenu import  *
 from pgui import  *
 
 from pyvguicom import pgutils
-#from pyvguicom import pgsel
-#from pyvguicom import pgsimp
-#from pyvguicom import pggui
-#from pyvguicom import pgbutt
-
 #print(os.path.dirname(pgutils.__file__))
 sys.path.append(os.path.dirname(pgutils.__file__))
 
@@ -41,13 +45,13 @@ class smallLab(Gtk.Label):
         font = "Sans 10"
         self.override_font(Pango.FontDescription(font))
         self.set_text(text)
-
 # ------------------------------------------------------------------------
 
 class MainWin(Gtk.Window):
 
     def __init__(self, conf = None):
 
+        self.alcnt = 0
         self.aloff = False
         self.cnt = 0
         self.conf = conf
@@ -57,15 +61,21 @@ class MainWin(Gtk.Window):
         self.alarm2 = None
         self.alwinx = None
 
-        Gtk.Window.__init__(self, Gtk.WindowType.TOPLEVEL)
+        if self.conf.pgdebug:
+            print("Starting pyclock ...")
+        #print("Conf: deb", conf.pgdebug, "verb", conf.verbose)
+
+        Gtk.Window.__init__(self, type=Gtk.WindowType.TOPLEVEL)
         #Gtk.Window.__init__(self, Gtk.WindowType.POPUP)
         self.set_decorated(False)
         #Gtk.register_stock_icons()
         #self.set_title("PyClock")
         self.set_position(Gtk.WindowPosition.CENTER_ALWAYS)
 
-        #ic = Gtk.Image(); ic.set_from_stock(Gtk.STOCK_DIALOG_INFO, Gtk.ICON_SIZE_BUTTON)
-        #window.set_icon(ic.get_pixbuf())
+        #ic = Gtk.Image(); ic.new_from_file(iconf)
+        #set_default_icon(ic.get_pixbuf())
+
+        self.set_default_icon_from_file(iconf)
 
         www = Gdk.Screen.width(); hhh = Gdk.Screen.height();
 
@@ -136,9 +146,9 @@ class MainWin(Gtk.Window):
         vbox.pack_start(bbox, 0, 0, 0)
 
         hbox2 = Gtk.HBox()
-        #lab3 = Gtk.Label("  ");   hbox2.pack_start(lab3,  1, 1, 0)
-        #lab4 = Gtk.Label("Top");  hbox2.pack_start(lab4, 0, 0, 0)
-        #lab5 = Gtk.Label("  ");   hbox2.pack_start(lab5, 1, 1, 0)
+        #lab3 = Gtk.Label(label="  ");   hbox2.pack_start(lab3,  1, 1, 0)
+        #lab4 = Gtk.Label(label="Top");  hbox2.pack_start(lab4, 0, 0, 0)
+        #lab5 = Gtk.Label(label="  ");   hbox2.pack_start(lab5, 1, 1, 0)
 
         vbox.pack_start(hbox2, 0, 0, 4)
 
@@ -184,9 +194,9 @@ class MainWin(Gtk.Window):
         vbox.pack_start(self.hbox3, True, True, 2)
 
         hbox2a = Gtk.HBox()
-        lab3a = Gtk.Label("  ");    hbox2a.pack_start(lab3a, 1, 1, 0)
-        lab4a = Gtk.Label("Butt");  hbox2a.pack_start(lab4a, 0, 0, 0)
-        lab5a = Gtk.Label("  ");    hbox2a.pack_start(lab5a, 1, 1, 0)
+        lab3a = Gtk.Label(label="  ");    hbox2a.pack_start(lab3a, 1, 1, 0)
+        lab4a = Gtk.Label(label="Butt");  hbox2a.pack_start(lab4a, 0, 0, 0)
+        lab5a = Gtk.Label(label="  ");    hbox2a.pack_start(lab5a, 1, 1, 0)
 
         #vbox.pack_start(hbox2a, 1, 1, 0)
 
@@ -208,7 +218,7 @@ class MainWin(Gtk.Window):
                         "Exit (Alt-X) program. RTC Wake stays active.")
         hbox4.pack_start(butt4, False, 0, 2)
 
-        lab2b = Gtk.Label("  ");  hbox4.pack_start(lab2b, 0, 0, 0)
+        lab2b = Gtk.Label(label="  ");  hbox4.pack_start(lab2b, 0, 0, 0)
 
         vbox.pack_start(hbox4, False, False, 4)
         self.set_opacity(.5)
@@ -294,6 +304,8 @@ class MainWin(Gtk.Window):
             #self.alarmlab.set_text("%02d:%02d:%02d" % (hhh, mmm, sss))
             self.alarmlab.set_text("%s" % (dt2))
             self.alarm = dt2
+            self.alcnt = 0
+            self.set_rtc(self.alarm)
         else:
             self.setala = True
             self.dotsh.onoff(2)
@@ -323,10 +335,14 @@ class MainWin(Gtk.Window):
             datex = datetime.datetime.now() + 60
 
         # set RTC
-        rtime = int(datex.timestamp() - 30)
-        #print("Setting RTC", rtime)
-        subprocess.call(["sudo", "rtcwake",
-                            "-m", "no", "-t", str(rtime)] )
+        try:
+            rtime = int(datex.timestamp() - 30)
+            arg = ["sudo", "rtcwake",  "-m",  "no", "-t", str(rtime), "&", ]
+            #print("arg:", arg)
+            subprocess.call(arg)
+        except:
+            pass
+        #print("After: ", )
 
     def button_press_event(self, win, event):
         #print( "button_press_event", win, event)
@@ -362,7 +378,7 @@ class MainWin(Gtk.Window):
     def load(self):
         #print("Called load")
         #self.set_status("Status text for load")
-        soundx.play_sound("./gong.ogg")
+        soundx.play_sound(gongs)
         #self.set_rtc(datetime.datetime.now())
         #dt = datetime.datetime.now()
         #alwin.AlWin(dt)
@@ -376,15 +392,24 @@ class MainWin(Gtk.Window):
         self.aloff = True
 
     def timer_sound(self):
-        #print("timer_sound: alwinx", self.alwinx)
+        if self.conf.pgdebug:
+            print("timer_sound: alwinx", self.alwinx, self.alcnt)
+
         if not self.aloff:
-            soundx.play_sound("./alarm.oga")
-            GLib.timeout_add(10000, self.timer_sound)
+            soundx.play_sound(alarms)
+            if self.alcnt < 5:
+                GLib.timeout_add(10000, self.timer_sound)
+                self.alcnt += 1
+            else:
+                self.aloff = True
+                self.alarmlab.set_text("")
+        else:
+            self.alarmlab.set_text("")
 
     def timer_alarm(self):
         #print("Alarm", self.alarm2)
-        self.set_rtc(self.alarm2)
         self.alwinx = alwin.AlWin(self.alarm2, self.callb)
+        self.alarmlab.set_text("Alert in progress ...")
         #print("alwinx", self.alwinx)
 
     def timer_tick(self):

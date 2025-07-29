@@ -3,15 +3,15 @@
 import os, sys, getopt, signal, select, socket, time, struct
 import random, stat
 
-sys.path.append('guilib')
-from mainwin import  *
+sys.path.append('pyclocklib')
+from pyclocklib.mainwin import  *
 
 from pyvguicom import comline
 
 # ------------------------------------------------------------------------
 # Globals
 
-version = "0.00"
+version = "1.00"
 
 # ------------------------------------------------------------------------
 
@@ -32,6 +32,7 @@ def phelp():
     #print()
     #sys.exit(0)
     #
+
 # ------------------------------------------------------------------------
 def pversion():
     print( os.path.basename(sys.argv[0]), "Version", version)
@@ -42,21 +43,22 @@ optarr = [\
     ["d:",  "debug=",   "pgdebug",  0,      None,     "Debug level. 0=none 10=noisy. Default: 0" ],
     ["p:",  "port=",    "port",     9999,   None,     "Listen on port. Default: 9999"],
     ["q",   "quiet",    "quiet",    0,      None,     "Quiet. Show less info."],
+    ["v",   "verbose",  "verbose",  0,      None,     "Increase verbosity."],
     ["V",   "version",  None,       None,   pversion, "Print Version string."],
     ["h",   "help",     None,       None,   phelp,    "Show Help. (this screen)"],
     ]
 
 #comline.setprog("Usage: template.py [options]")
-comline.sethead("Template for creating a GUI")
+comline.sethead("Alarm Clock with big LCD")
 comline.setargs("[options]")
-comline.setfoot("Footer")
+comline.setfoot("This program with set the RTC wake time as well.")
 conf = comline.ConfigLong(optarr)
 
 if __name__ == '__main__':
 
     global mw
     args = conf.comline(sys.argv[1:])
-    mw = MainWin()
+    mw = MainWin(conf)
     mw.run()
     sys.exit(0)
 

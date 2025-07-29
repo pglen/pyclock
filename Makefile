@@ -8,21 +8,18 @@
 #
 
 all:
-	@echo "Type 'make help' for a list of targets"
+	@echo "Targets:    install     -- Install project "
+	@echo "            clean       -- Clean project temp files"
+	@echo "            git         -- Checkin to git, push it"
 
-help:
-	@echo
-	@echo "Targets:"
-	@#echo "	 make install    -- Install project "
-	@#echo "	 make pack       -- package project "
-	@#echo "	 make git        -- checkin project "
-	@echo
+TARGET=~/pgbin
 
 install:
-	@./install.py
+	cp pyclock.py $(TARGET)
+	cp -a pyclocklib $(TARGET)
 
-pack:
-	@./pack.sh
+clean:
+	rm -r __pycache__
 
 # Auto Checkin
 ifeq ("$(AUTOCHECK)","")
@@ -34,11 +31,4 @@ git:
 	git commit -m "$(AUTOCHECK)"
 	git push
 
-
 # End of Makefile
-
-
-
-
-
-
